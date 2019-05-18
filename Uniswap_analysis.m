@@ -26,7 +26,7 @@ Commited_ETH0 = 0.5*initial_committed_capital/ETH_price0;
 
 % assuming a change of ETH price with no external change of the liquidity pool size
 
-price_change_ratio= 0.5:0.01:1.5;
+price_change_ratio= (-0.5:0.01:0.5); 
 trading_vol= linspace(100e3,10e6); % volume between 10k-10M
 
 MM_new_ETH_share = zeros(length(price_change_ratio),length(trading_vol));
@@ -37,7 +37,7 @@ PL = zeros(length(price_change_ratio),length(trading_vol));
 for ii = 1:length(price_change_ratio)
     for jj = 1:length(trading_vol)
         ETH_price_change_ratio = price_change_ratio(ii);
-        new_ETH_price = ETH_price0*ETH_price_change_ratio;
+        new_ETH_price = ETH_price0*(1+ETH_price_change_ratio);
         
         trading_volume = trading_vol(jj);
         trading_fees = 0.003*trading_volume;
@@ -68,6 +68,33 @@ for ii = 1:length(price_change_ratio)
     end
 end;
 figure;
-imagesc(trading_vol/1e6,(price_change_ratio-1)*100,PL/initial_committed_capital*100)
+imagesc(trading_vol/1e6,(price_change_ratio)*100,PL/initial_committed_capital*100)
 ylabel('ETH price change [%]');
 xlabel('Trading Volume [$ Million]');
+
+% A plot for profitability for a certain percentage of price change
+selected_price_change_percentage = 0.2;
+ind = find (price_change_ratio==selected_price_change_percentage);
+figure;
+plot(trading_vol/1e6,PL(ind,:)/initial_committed_capital*100);
+ylabel('P/L [%]');
+xlabel('Trading Volume [$ Million]');
+title('P/L percentage for 20% of price change')
+
+% A plot for a certain trading volume
+selected_trading_vol1 = 2e6;
+ind1 = find (trading_vol==selected_trading_vol1);
+selected_trading_vol2= 5e6;
+ind2 = find (trading_vol==selected_trading_vol2);
+selected_trading_vol3 = 8e6;
+ind3 = find (trading_vol==selected_trading_vol3);
+
+figure;
+plot(price_change_ratio*100,PL(:,ind1)/initial_committed_capital*100 ...
+,price_change_ratio*100,PL(:,ind2)/initial_committed_capital*100 ...
+,price_change_ratio*100,PL(:,ind3)/initial_committed_capital*100 ...
+);
+ylabel('P/L [%]');
+xlabel('Price Change [%]');
+grid on;
+legend('$2MM trading vol', '$5MM trading vol','$8MM trading vol')
